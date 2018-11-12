@@ -23,9 +23,9 @@ end
 Compute the event synchronization covariance matrix of the matrix `X`.
 
 # Arguments
+- `method::Function`: A method for thresholding potential spikes (e.g., `mean`, `median`)
 - `X::AbstractMatrix{<:Union{Real, Missing}}`: A matrix of the form nvar by nobs (e.g., nodes by time).
 - `tau::Int`: Window size (e.g., 6 hours)
-- `method::Function`: A method for thresholding potential spikes (e.g., `mean`, `median`)
 
 # Returns
 - `Matrix{Real}`: a square matrix representing the event synchronization correlation
@@ -39,9 +39,9 @@ Compute the event synchronization covariance matrix of the matrix `X`.
 - https://www.researchgate.net/publication/11025829_Event_Synchronization_A_simple_and_fast_method_to_measure_synchronicity_and_time_delay_patterns
 """
 function escor(
+    method::Union{typeof(median), typeof(mean)},
     X::AbstractMatrix{<:Union{Real, Missing}},
     tau::Int,
-    method::Union{typeof(median), typeof(mean)}
 )
     # Remove columns that are entirely missing
     cols = .!missing_columns(X)
@@ -49,7 +49,7 @@ function escor(
 
     N = size(X, 1)
     L = size(X, 2)
-    Z = detectspikes(X, method)
+    Z = detectspikes(method, X)
     J = zeros(N, N)
 
     for k=1:L
@@ -63,7 +63,7 @@ function escor(
 end
 
 """
-    sqrtescor(X, tau, method)
+    sqrtescor(method, X, tau)
 
 Computes the square root of the event synchronization correlation matrix of `X`.
 This has historically been useful if we want to use the event synchronization matrix with portfolio optimization.
@@ -71,37 +71,37 @@ This has historically been useful if we want to use the event synchronization ma
 See [`escor`](@ref) for more details.
 """
 function sqrtescor(
+    method::Union{typeof(median), typeof(mean)},
     X::AbstractMatrix{<:Union{Real, Missing}},
     tau::Int,
-    method::Union{typeof(median), typeof(mean)}
 )
-    M = escor(X, tau, method)
+    M = escor(method, X, tau)
     M = (M + M') / 2
     return real(sqrtm(M))
 end
 
 function detectspikes(
+    rf::Union{typeof(median), typeof(mean)},
     X::AbstractMatrix{<:Union{Real, Missing}},
-    rf::Union{typeof(median), typeof(mean)}
 )
-    Z1 = threshold_p(X, rf)
-    Z2 = threshold_n(X, rf)
+    Z1 = threshold_p(rf, X)
+    Z2 = threshold_n(rf, X)
 
     return Z1 .- Z2
 end
 
 # This is easier to read without Missings.
-# threshold_p(X::AbstractMatrix, rf::Function) = mapslices(x -> x.>rf(x[x.>=0]), P, 2)
+# threshold_p(rf::Function, X::AbstractMatrix) = mapslices(x -> x.>rf(x[x.>=0]), P, 2)
 # The additional mess is to replicate MATLAB behaviour: [1,2, NaN] > 0 == [true, true, false]
 # This is the Missings.replace(x.>=0, false) part.
 # The collect statements are because Missings is lazy
 # The final Missings.replace(x, -Inf)).>rf(...) is because x.>rf(...) appears to fail
-function threshold_p(X::AbstractMatrix, rf::Union{typeof(median), typeof(mean)})
+function threshold_p(rf::Union{typeof(median), typeof(mean)}, X::AbstractMatrix)
     rfs = mapslices(row -> rf([x for x in row if !ismissing(x) && x >= 0]), X, dims=2)
     collect(Missings.replace(X .> rfs, false))
 end
 
-function threshold_n(X::AbstractMatrix, rf::Union{typeof(median), typeof(mean)})
+function threshold_n(rf::Union{typeof(median), typeof(mean)}, X::AbstractMatrix)
     rfs = mapslices(row -> rf([x for x in row if !ismissing(x) && x <= 0]), X, dims=2)
     collect(Missings.replace(X .< rfs, false))
 end
