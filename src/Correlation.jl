@@ -1,14 +1,13 @@
 module Correlation
 
-using Compat: Compat, axes, sum
-using Compat.LinearAlgebra
-using Compat.Statistics: mean, median
+using LinearAlgebra
 using Missings
+using Statistics: mean, median
 
-if isdefined(Compat.LinearAlgebra, :sqrtm)
-    sqrtm = Compat.LinearAlgebra.sqrtm
+if isdefined(LinearAlgebra, :sqrtm)
+    sqrtm = LinearAlgebra.sqrtm
 else
-    sqrtm = Compat.LinearAlgebra.sqrt
+    sqrtm = LinearAlgebra.sqrt
 end
 
 include("eventsync.jl")

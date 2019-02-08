@@ -1,8 +1,8 @@
 using Correlation
-using Compat.Test
+using Test
 
-using Compat.LinearAlgebra
-using Compat.Statistics: mean, median
+using LinearAlgebra
+using Statistics: mean, median
 using Missings
 
 @testset "Correlation.jl" begin
