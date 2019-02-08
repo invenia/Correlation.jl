@@ -19,11 +19,11 @@ variables:
   extends: .test_docker
 
 "1.1 (Linux, 64-bit)":
-tags:
-  - linux
-  - 64-bit
-  - shell-ci
-extends: .test_shell_1_1
+  tags:
+    - linux
+    - 64-bit
+    - shell-ci
+  extends: .test_shell_1_1
 
 "Nightly (Linux, 64-bit)":
   tags:
