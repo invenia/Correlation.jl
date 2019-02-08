@@ -12,6 +12,5 @@ else
 end
 
 include("eventsync.jl")
-include("deprecated.jl")
 
 end # module
