@@ -1,4 +1,4 @@
-using Documenter, Correlation
+using Correlation, Documenter
 
 makedocs(;
     modules=[Correlation],
@@ -13,6 +13,6 @@ makedocs(;
         "assets/invenia.css",
         "assets/logo.png",
     ],
+    checkdocs = :exports,
     strict = true,
-    checkdocs = :none,
 )
