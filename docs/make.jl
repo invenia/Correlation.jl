@@ -2,7 +2,7 @@ using Documenter, Correlation
 
 makedocs(;
     modules=[Correlation],
-    format=:html,
+    format= Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     pages=[
         "Home" => "index.md",
     ],
@@ -15,5 +15,4 @@ makedocs(;
     ],
     strict = true,
     checkdocs = :none,
-    html_prettyurls = false,
 )
