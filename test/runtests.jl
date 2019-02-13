@@ -2,8 +2,8 @@ using Correlation
 using Test
 
 using LinearAlgebra
-using Statistics: mean, median
 using Missings
+using Statistics: mean, median
 
 @testset "Correlation.jl" begin
     @testset "Event Synchronisation" begin
