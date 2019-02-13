@@ -1,8 +1,8 @@
-using Documenter, Correlation
+using Correlation, Documenter
 
 makedocs(;
     modules=[Correlation],
-    format=:html,
+    format=Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     pages=[
         "Home" => "index.md",
     ],
@@ -13,7 +13,6 @@ makedocs(;
         "assets/invenia.css",
         "assets/logo.png",
     ],
+    checkdocs = :exports,
     strict = true,
-    checkdocs = :none,
-    html_prettyurls = false,
 )
