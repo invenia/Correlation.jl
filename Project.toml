@@ -1,6 +1,6 @@
 name = "Correlation"
 uuid = "51a50332-c1db-5759-b0b5-6c83453eca4c"
-authors = ["Eric Davies <eric.davies@invenia.ca>", "Sam Morrison <sam.morrison@invenia.ca>"]
+authors = ["Eric Davies <iamed2@gmail.com>", "Sam Morrison <sam.morrison@invenia.ca>"]
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
