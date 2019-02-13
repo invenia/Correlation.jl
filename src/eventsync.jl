@@ -77,7 +77,7 @@ function sqrtescor(
 )
     M = escor(method, X, tau)
     M = (M + M') / 2
-    return real(sqrtm(M))
+    return real(sqrt(M))
 end
 
 function detectspikes(
@@ -90,20 +90,14 @@ function detectspikes(
     return Z1 .- Z2
 end
 
-# This is easier to read without Missings.
-# threshold_p(rf::Function, X::AbstractMatrix) = mapslices(x -> x.>rf(x[x.>=0]), P, 2)
-# The additional mess is to replicate MATLAB behaviour: [1,2, NaN] > 0 == [true, true, false]
-# This is the Missings.replace(x.>=0, false) part.
-# The collect statements are because Missings is lazy
-# The final Missings.replace(x, -Inf)).>rf(...) is because x.>rf(...) appears to fail
 function threshold_p(rf::Union{typeof(median), typeof(mean)}, X::AbstractMatrix)
     rfs = mapslices(row -> rf([x for x in row if !ismissing(x) && x >= 0]), X, dims=2)
-    collect(Missings.replace(X .> rfs, false))
+    coalesce.(X .> rfs, false)
 end
 
 function threshold_n(rf::Union{typeof(median), typeof(mean)}, X::AbstractMatrix)
     rfs = mapslices(row -> rf([x for x in row if !ismissing(x) && x <= 0]), X, dims=2)
-    collect(Missings.replace(X .< rfs, false))
+    coalesce.(X .< rfs, false)
 end
 
 """

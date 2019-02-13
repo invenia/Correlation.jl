@@ -2,7 +2,7 @@ using Correlation, Documenter
 
 makedocs(;
     modules=[Correlation],
-    format= Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
+    format=Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     pages=[
         "Home" => "index.md",
     ],

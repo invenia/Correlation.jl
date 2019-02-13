@@ -1,9 +1,7 @@
 using Correlation
-using Test
-
 using LinearAlgebra
-using Missings
 using Statistics: mean, median
+using Test
 
 @testset "Correlation.jl" begin
     @testset "Event Synchronisation" begin
@@ -121,7 +119,7 @@ using Statistics: mean, median
         end
 
         @testset "missing_columns" begin
-            r = allowmissing(ones(5,4))
+            r = ones(Union{Float64,Missing}, 5, 4)
             @test Correlation.missing_columns(r) == falses(4)
             r[2,2] = missing
             @test Correlation.missing_columns(r) == falses(4)
