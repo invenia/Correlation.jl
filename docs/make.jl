@@ -11,7 +11,6 @@ makedocs(;
     authors="Eric Davies",
     assets=[
         "assets/invenia.css",
-        "assets/logo.png",
     ],
     checkdocs = :exports,
     strict = true,
