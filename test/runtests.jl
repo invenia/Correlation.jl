@@ -25,26 +25,6 @@ using Test
             out = Correlation.detectspikes(median, P)
             @test size(out) == size(Z)
             @test out == Z
-
-            ex_out_p = Bool[
-                 0     1     1     0     0
-                 1     0     0     0     1
-                 0     1     0     0     0
-                 0     1     0     0     0
-                 0     1     0     1     0
-            ]
-            ex_out_n = Bool[
-                 0     0     0     0     0
-                 0     0     0     1     0
-                 1     0     0     0     0
-                 1     0     1     0     0
-                 0     0     0     0     0
-            ]
-
-            out = Correlation.threshold_p(mean, P)
-            @test ex_out_p == out
-            out = Correlation.threshold_n(mean, P)
-            @test ex_out_n == out
             @test_throws MethodError Correlation.detectspikes(identity, P)
         end
 
