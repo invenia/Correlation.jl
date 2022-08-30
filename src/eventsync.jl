@@ -1,23 +1,4 @@
 """
-    kron!(X, v)
-
-Compute ``X + (v \\otimes v')``, i.e. the sum of the matrix `X` and the Kronecker product
-of `v` with its transpose, and store the result in `X`.
-
-!!! warn
-    For performance reasons, no error condition checking is performed in this function; it
-    assumes that `X` is square with dimensions `length(v) × length(v)`.
-"""
-function kron!(X::AbstractMatrix, v::AbstractVector)
-    # NOTE: The lack of error checking is okay for our use case, since `X` is square by
-    # construction with dimensions conformant with `v`
-    @inbounds for i = eachindex(v), j = eachindex(v)
-        X[i,j] += v[i] * v[j]
-    end
-    X
-end
-
-"""
     escor(X, tau, method)
 
 Compute the event synchronization covariance matrix of the matrix `X`.
@@ -47,18 +28,27 @@ function escor(
     cols = .!missing_columns(X)
     X = @view X[:, cols]
 
-    N = size(X, 1)
-    L = size(X, 2)
+    # Determine spike time series.
     Z = detectspikes(method, X)
-    J = zeros(N, N)
 
-    for k=1:L
-        Zt = view(Z, :, max(1, k-tau):min(L,k+tau))
-        t = vec(sign.(sum(Zt, dims=2)))
-        kron!(J, t)
+    # Compute correlation inside a function barrier to handle type-instability associated
+    # with `X`.
+    return _function_barrier(Z, tau)
+end
+
+function _function_barrier(Z, tau)
+    F = cumsum(Z; dims=2)
+    H = Matrix{Float32}(undef, size(F))
+    L = size(Z, 2)
+    for col in 1:size(Z, 2), row in 1:size(Z, 1)
+        if col - tau - 1 <= 0
+            H[row, col] = sign(F[row, min(L, col + tau)])
+        else
+            H[row, col] = sign(F[row, min(L, col + tau)] - F[row, max(1, col - tau - 1)])
+        end
     end
-
-    D = pinv(Diagonal(sqrt.(diag(J))))
+    J = H * H'
+    D = pinv(Diagonal(sqrt.(Float64.(diag(J)))))
     return D * J * D
 end
 
@@ -84,20 +74,10 @@ function detectspikes(
     rf::Union{typeof(median), typeof(mean)},
     X::AbstractMatrix{<:Union{Real, Missing}},
 )
-    Z1 = threshold_p(rf, X)
-    Z2 = threshold_n(rf, X)
-
-    return Z1 .- Z2
-end
-
-function threshold_p(rf::Union{typeof(median), typeof(mean)}, X::AbstractMatrix)
-    rfs = mapslices(row -> rf([x for x in row if !ismissing(x) && x >= 0]), X, dims=2)
-    coalesce.(X .> rfs, false)
-end
-
-function threshold_n(rf::Union{typeof(median), typeof(mean)}, X::AbstractMatrix)
-    rfs = mapslices(row -> rf([x for x in row if !ismissing(x) && x <= 0]), X, dims=2)
-    coalesce.(X .< rfs, false)
+    Y = collect(X)'
+    rfs_ub = map(col -> rf(Iterators.filter(x -> !ismissing(x) && x >= 0, col)), eachcol(Y))
+    rfs_lb = map(col -> rf(Iterators.filter(x -> !ismissing(x) && x <= 0, col)), eachcol(Y))
+    return coalesce.(X .> rfs_ub, false) .- coalesce.(X .< rfs_lb, false)
 end
 
 """
