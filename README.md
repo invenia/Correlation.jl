@@ -1,2 +1,4 @@
-# Correlation
+# Correlation.jl
+Contains the Event Synchronization Correlation Algorithm
 
+See https://www.researchgate.net/publication/11025829_Event_Synchronization_A_simple_and_fast_method_to_measure_synchronicity_and_time_delay_patterns
